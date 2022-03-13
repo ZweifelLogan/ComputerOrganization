@@ -1,0 +1,214 @@
+1) Convert following byte sequence into the corresponding Y86-64 instructions
+	1062DEA0BF506E010200000000000000
+
+	10 -> nop
+	62 DE -> andq %r13, %r14
+	A0 BF -> pushq %r11
+	50 6E 0102000000000000 -> mrmovq $0x201(%r14), %rsi
+	00 -> halt
+	
+	All instructions together:
+	
+	nop
+	andq %r13, %r14
+	pushq %r11
+	mrmovq $0x201(%r14), %rsi
+	halt
+
+2) Byte-encode the instruction -> mrmovq $0x12345(%rdi), %rsi
+	
+	mrmovq -> 50
+	rA, rB -> %rsi = 6, %rdi = 7   ==== 67
+	D = 0x12345 -> needs to be 8B, currently 2.5B, needs 5.5B padding
+		0x12345 -> 0x0000000000012345 , reverse byte order for encoding
+		D = 4523010000000000
+
+	All together byte sequence -> 50674523010000000000
+
+3) Trace execution for byte-encoded instruction B05F by filling in SEQ stages
+	since adress for PC is not given in the question I'm assuming it is at 0x000
+
+	B0 -> popq
+	5F -> 5 = rA == %rbp     F = no Register
+	popq %rbp
+
+	Fetch Stage
+		icode:ifun <- M1[PC] == M1[0x000] = B:0
+		rA:rB <- M1[PC+1] == M1[0x001] = 5:F
+		valP <- PC + 2 == 0x000 + 2 = 0x002
+
+	Decode Stage
+		valA <- R[%rsp] -> specific value unknown because values in stack not given
+		valB <- R[%rsp] -> specific value unknown because values in stack not given
+
+	Execute Stage
+		valE <- valB + 8 -> specific value unknown because value of valB is unknown
+
+	Memory Stage
+		valM <- M8[valA] -> specific value unknown because value of valA is unknown
+
+	Write-back Stage
+		R[%rsp] <- valE -> specific value unknown because value of valE is unknown
+		R[ra] == R[%rbp] <- valM -> specific value unknown because valM is unknown
+
+	PC update Stage
+		PC <- valP ==  PC = 0x002
+
+4) Trace instruction for byte-encoded instruction 2027
+	since adress for PC is not given in the question I'm assuming it is at 0x000
+
+	20 -> rrmovq
+	27 -> rA = 2 = %rdx    rB = 7 = %rdi
+
+	Fetch Stage
+		icode:ifun <- M1[PC] == M1[0x000] = 2:0
+		rA:rB <- M1[PC + 1] == M1[0x001] = 2:7
+		valP <- PC + 2 == 0x000 + 2 = 0x002
+
+	Decode Stage
+		valA <- R[rA] == R[%rdx] -> valA will be whatever value is in register %rdx
+	
+	Execute Stage
+		valE <- 0 + valA -> valE will be equivalent to valA, which is equivalent to the value held in %rdx
+
+	Memory Stage
+		Nothing to do in this stage for this instruction
+	
+	Write-back Stage
+		R[rB] == R[%rdi] <- valE -> value in valE will be written to register %rdi
+
+	PC update Stage
+		PC <- valP ==   PC = 0x002
+
+5) Latency and throughput question
+	Latency is how long it takes to get through a circuit typically measured in picoseconds.
+	Throughput is how many instructions can be processed per second. Typically measured in Giga Instructions per Second (GIPS)
+	The difference is that latency is a measure of how fast a single instruction is processed while throughput is a 
+		measure of how many instructions can be processed in a determined amount of time. Formula is 1000 / Total Latency
+	You can simultaneously increase the throughput and latency of a system by 'pipelining' circuits. This breaks up a larger
+		circuit into smaller parts with clock registers inbetween each part. The extra clock registers is what increases the latency. However,
+		the throughput is decreased because when you pipeline a circuit you are able to run different steps for different
+		instructions at the same time reducing the amount of time taken between completing one instruction and completing the next.
+		A smaller time inbetween completing processing isntructions increases the throughput
+	One situation where you would sacrifice having a larger latency for a higher throughput is when the returns from dividing circuits
+		have not yet diminished a lot. Continually subdividing circuits has diminishing returns because the more you subdivide the more 
+		clock registers you have to add
+	A situation where you would not want to have a lower latency is when diminsihing returns from subdividing circuits is occuring or when
+		cicruits can not be subdivided up into very even ways which does not help efficiency as much as having cicuits evely subdivided.
+
+6) Have instruction that consists of a combinational logic circuit that takes 500ps to execute followed by a register of 20ps.
+	a) What are the latency and throughput of this instruction
+		For this question Stages are labeled by number and the clock registers labeled REG
+		
+		     500ps       20ps		
+		-> |Stage 1| -> |REG| ->
+		
+		Total Latency = 500 + 20 = 520ps
+		Throughput = 1000 / Latency = 1000/ 520 = 1.92 GIPS
+
+	b) Have three 200ps stages each followed by a 20ps clock register. What are the new Latency and Throughput
+
+		     200ps       20ps      200ps       20ps      200ps       20ps
+		-> |Stage 1| -> |REG| -> |Stage 2| -> |REG| -> |Stage 3| -> |REG| ->
+
+		Total Latency = 200*3  +  20*3 = 660ps
+		Throughput = 1000 / Latency = 1000 / 220 = 4.515 GIPS
+			220 used as the Latency because due to pipelining the latency between two instructions being completed is reduced to 220ps
+
+
+7) Set of stages for an instruction is given all followed by a 20ps clock register: 10ps, 140ps, 30ps, 30ps, 30ps, 30ps, 30ps, 150ps and 10ps.
+	Allowed to group stages into larger combinational circuits
+
+	Given set of stages with no modification
+
+	      10ps       20ps      140ps       20ps      30ps        20ps      30ps        20ps      30ps        20ps
+	-> |Stage 1| -> |REG| -> |Stage 2| -> |REG| -> |Stage 3| -> |REG| -> |Stage 4| -> |REG| -> |Stage 5| -> |REG| ->
+		 |Stage 6| -> |REG| -> |Stage 7| -> |REG| -> |Stage 8| -> |REG| -> |Stage 9| -> |REG| ->
+		   30ps        20ps      30ps        20ps       150ps      20ps      10ps        20ps	
+		
+		Total Latency = 10 + 140 + 30*5 + 150 + 10 +  20*9 = 460 + 180 = 640ps      -> 460 is the latency of all stages excluding clock registers
+		Throughput = 1000/Latency = 1000 / 170 = 5.88G GIPS
+			170 used as latency because that is how long it takes to get through the slowest stage in this circuit of stages
+
+	a) How would I group these stages.
+		I have two answers for this question. The first option I assume that I am able to break up larger individual stages into smaller pieces
+			The second option assumes that I am only able to group up smaller individual stages into larger ones.
+
+		1) First option. Breaking up larger individual stages into smaller substages. 140ps becomes four 30ps stages and one 20ps stage
+			150ps becomes five 30ps stages. Results in 17 total stages
+			
+			    10ps      20ps    20ps      20ps    30ps      20ps    30ps      20ps    30ps      20ps    30ps      20ps    30ps      20ps    30ps      20ps    30ps      20ps    
+			->|Stage 1|->|REG|->|Stage 2|->|REG|->|Stage 3|->|REG|->|Stage 4|->|REG|->|Stage 5|->|REG|->|Stage 6|->|REG|->|Stage 7|->|REG|->|Stage 8|->|REG|->|Stage 9|->|REG|->
+				|Stage 10|->|REG|->|Stage 11|->|REG|->|Stage 12|->|REG|->|Stage 13|->|REG|->|Stage 14|->|REG|->|Stage 15|->|REG|->|Stage 16|->|REG|->|Stage 17|->|REG|->
+				   30ps      20ps    30ps      20ps     30ps      20ps     30ps       20ps    30ps      20ps     30ps      20ps     30ps      20ps     10ps      20ps    				
+
+
+
+		2) Second option. Not able to break original stages into smaller ones. Only group up original stages. I make 3 stages of 150ps by combining the 10ps and 140ps stages
+			and combining the 5 30ps stages. Leaves one 10ps stage remaining
+
+			     150ps       20ps      150ps       20ps      150ps       20ps      10ps        20ps 
+			-> |Stage 1| -> |REG| -> |Stage 2| -> |REG| -> |Stage 3| -> |REG| -> |Stage 4| -> |REG| ->
+
+
+	b) What are the latency and throughput of the grouped solution(s).
+		For 1st option:
+			Total Latency = 460 + 20*17 = 460 + 340 = 800ps
+			Throughput = 1000/Latency = 1000 / 50 = 20 GIPS    -> 50 is the latency because that is the slowest stage in this group of stages plus the clock register.
+
+		For 2nd option:
+			Total Latency = 460 + 20*4 = 460 + 80 = 540ps
+			Throughput = 1000 / Latency = 1000 / 170 = 5.88 GIPS -> 170 is the latency because that is the slowest stage in the group plus the clock register
+
+	c) How does this compare to the ungrouped
+		For First option: My Total latency is higher than the ungrouped set of stages but my throughput is much higher by nearly a factor of 4
+
+		For Second option: The total throughput of this option isn't different than the ungrouped stages but by using fewer stages the total latency of this group went down
+
+	d) How does this compare to grouping them into a single 460ps stage
+		
+		     460ps       20ps
+		-> |Stage 1| -> |REG| -> 
+
+			Total latency = 460 + 20 = 480ps
+			Throughput = 1000 / 480 = 2.08 GIPS
+
+		
+		For First option: This option had a much higher total latency but had a better throughput by right around a factor of 10
+
+		For second option:  This option has a slightly higher total latency but has a higher throughput by about a factor of 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

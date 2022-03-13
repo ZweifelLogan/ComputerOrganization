@@ -1,0 +1,26 @@
+# Homework 1 -- free response questions
+Due Monday, 2/15
+
+1. What are the compiler flags used to generate, assembly, object files, and linking object files to create an executable.
+      -o, -s and -i
+
+
+2. Describe the different steps of compiling a C program.
+      Preprocessor, compiler, assembler, Linker and all those output and executable program
+
+3. Compare and contrast compiling C with compiling Java. What about executing a C binary versus a Java program?
+      java is an interpreted language and c converts code into machine language when it compiles
+      so the two are very different. C is much more customizable becuase you have so much control over how
+      your program is built which is a plus compared to Java. It is generally easier to compile in Java though
+
+
+4. Can you run a pre-compiled binary on any computer? For example, could a binary produced on a Windows
+   machine run on an iPhone?
+      If the computer the binary was compiled on is similar to the new one , such as two 32bit Window OS'
+         the binary would most likely work. Switching between different types of computers such as a Windows
+         to an iPhone would most likely not work 
+
+5. Suppose you need to store 128 bits of data but are on a 64-bit machine. Describe a way to store
+   this data in the most compact for possible (hint: if you use an array you will need to store the
+   length. There is a more compact solution).
+      I think a hash table wouldn't be a bad way to do it.

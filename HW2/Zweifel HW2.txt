@@ -1,0 +1,136 @@
+1) for assembly code  -   xorq %rdx, %rdx
+	a) This assembly sets register rdx to 0 and initializes some conditional flags
+	b) A more straightforward way of doing this would be the equivalent of
+		movq $0, %rdx
+	c) A compiler-writer might choose the xorq method because it takes up less bytes 
+		in it's approach, 3, vs. movq, 7, as well as xorq setting some flags
+
+2) Functions that generate designated assembly code
+
+int _should_continue(int x, int y) {
+	int result = 0;
+	if (x < y) {
+		result = 1;
+	}
+	return result;
+}
+
+int _some_function(int a, int b) {
+	int temp = 0;
+	int result;
+	do {
+		temp = temp + 1;
+		a = temp;
+	} while (_should_continue(a, b) != 0);
+	result = temp;
+	return result;
+}
+
+
+3) Write C code from given assembly
+
+long decode2(long x, long y, long z) {
+	long ret;
+	y = y - z;
+	x = x * y;
+	ret = y;
+	ret = ret << 63;
+	ret = ret >> 63;
+	ret = ret ^ x;
+	return ret;
+}
+
+
+4) From assembly be able to generate C code
+	a) x = %rdi   n = %rsi / %esi    result = %rax    mask = %rdx
+	b) initial values: result = 0      mask = 1
+	c) The test condition for mask is      mask != 0
+		testq %rdx, %rdx
+		jne   .L3
+	   The two lines above represent the test condition in assembly. jne
+		looks for the ~ZF flag which is set by the testq line
+		jne jumps to .L3 if ZF != 0 which is the same as rdx & rdx
+
+	
+	d) Mask gets updated by the line below, line 10 in the problem
+		
+		salq %cl, %rdx
+	   
+	   Mask is represent by %rdx and is shifted to the left %cl times
+	   %cl is the 1 Byte version of %rsi / %esi which represents n
+	   Masks update expression is:    mask = mask << n
+
+	
+	e) Result gets updated by the three assembly lines below
+
+		movq %rdi, %r8
+		andq %rdx, %r8
+		orq  %r8,  %rax
+	
+	   The movq line stores register %rdi (represents x) into register %r8
+	   The andq line runs bitwise AND between the equivalent of mask and x, stored in %r8
+	   The orq line runs bitwise OR between the equivalent of result and x, stored in result
+           These three lines represent the result update statement:    result |= x;
+
+	f) Finish the given code in the problem
+	
+	long loop(long x, long n) {
+		long result = 0;
+		long mask;
+		for (mask = 1; mask != 0; mask = mask << n) {
+			result |= x;
+		}
+		return result;
+	}
+
+
+5) Using pointers in C to simulate Python method syntax
+	Python methods take the syntax of method(self, int x) where self is a reference/pointer
+	to the object calling the method.
+
+	We could replicate this syntax in C by adding a pointer as a parameter to methods
+	This pointer would point to what called / is being passed into the method
+	An example of code that would support this:
+
+	void add(int* a, int n) {
+		*a += n;
+	}
+
+	int main() {
+		int x = 1;
+		int* y = &x;
+		add(y, 2);
+		printf("%d\n", x);
+		printf("%d\n", *y);
+
+	}
+
+	In my example integer pointer y points to integer x
+	the add function/method takes in a integer pointer as a parameter
+	In this example y is equivalent to self in python as it points to what is 
+		being used/manipulated in the method
+	While my example doesn't use a pointer to reference an object that called the method like self does in 
+		Python the same logic stands, a pointer for an object of class Place
+		passed into a method of said class in C would let you access all the data of said object
+		the exact same way self does in Python
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

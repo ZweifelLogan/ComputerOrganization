@@ -1,0 +1,49 @@
+2)int _should_continue(int x, int y) {
+    int result = 0;
+    if ( x < y) {
+        result = 1;
+    }
+    return result;
+}
+
+int _some_function(int a, int b) {
+    a = 0;
+    b = 2;
+    long temp1;
+    long temp2;
+    temp1 = b;
+    b = temp1;
+    int result = 0;
+
+    do {
+        result = result + 1;
+        temp1 = _should_continue(result, b);
+    } while ( temp1 != 0);
+
+
+    return result;
+}
+
+
+
+3)long decode2(long x, long y, long z) {
+    long result = 1;
+    y = y - z;
+    x = x * y;
+    y = result;
+    result << 63;
+    result >> 63;
+    
+    return result;
+}
+
+
+
+4)long loop(long x, int n) {
+    int result = 0;
+    long mask;
+    for ( mask = 1; mask != 0 ; mask << n ) {
+        result |= 0 ;
+    }
+    return result;
+}

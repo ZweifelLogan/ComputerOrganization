@@ -1,0 +1,138 @@
+1) implement the function inner 6x1 that uses 6x1 loop unrolling
+
+2) implement the function inner6x6 that uses 6x6 loop unrolling
+
+3) implement the function inner6x1a that uses 6x1 loop unrolling and the reassociation transformation
+        
+
+4) Data Table
+        Function Name   Method              Integer CPE     Float CPE
+        --------------------------------------------------------------------
+        inner           no alteration       1.82            2.28
+        inner6x1        6x1 unrolling       1.2             2.28
+        inner6x6        6x6 unrolling       1.09            1.10
+        inner6x1a       6x1a unrolling      1.01            1.03
+
+  a) The 6x1a loop unrolling optimization had the greatest impact on performance
+        for both integers and floats. This isn't surprising because the combination
+        of loop unrolling and reassociation transformation reduces data dependencies
+        between operations, thus reducing the amount of operations on the critical path
+        resulting in a lower CPE.
+
+  b) I would expect that if everyone had the same codes the general trends of CPE between the
+        methods of unrolling would not change but stay constant. This chapter we have talked about
+        modern processors can make programs more efficient and since everyone in this class
+        is using a computer with a modern processor I would expect that CPE measurements would
+        not be different between people.
+
+5)
+   5.14) Code implementation: 6x1
+        void inner6x1(vec_ptr u, vec_ptr v, data_t* dest) {
+                // You can assume your vectors are the same length (as required by this assert)
+                assert(vec_length(u) == vec_length(v));
+
+                long i;
+                long size = vec_length(u);
+                long limit = size - 5;
+                data_t* du = get_vec_start(u);
+                data_t* dv = get_vec_start(v);
+                data_t sum = (data_t) 0;
+  
+                //main for loop
+                for (i = 0; i < limit; i+=6) {
+                        sum = sum + du[i] * dv[i];
+                        sum = sum + du[i+1] * dv[i+1];
+                        sum = sum + du[i+2] * dv[i+2];
+                        sum = sum + du[i+3] * dv[i+3];
+                        sum = sum + du[i+4] * dv[i+4];
+                        sum = sum + du[i+5] * dv[i+5];
+                }
+
+                //second for loop to process all elements not done in main loop
+                for (; i < size; i++) 
+                        sum = sum + du[i] * dv[i];
+  
+                *dest = sum;
+        }
+
+        a) an Intel Core i7 processor cannot have a CPE less than 1 because a CPE of 1 represents a fully
+                pipelined system and haveing a CPE of less than one would mean that you would on average
+                be able to begin to process more than one instruction or operation per cycle which isn't
+                possible in this situation
+
+        b) The reason why the floating point measurements did not improve with this method is because
+                the floating point operations are already at their latenecy bound. There are still half
+                as many operations for floating points, the same as integers, but each iteration will have
+                more multiplication operations in sequence, so overall CPE performance does not imporve.
+
+
+   5.15) Code implementation: 6x6
+        void inner6x6(vec_ptr u, vec_ptr v, data_t* dest) {
+                // You can assume your vectors are the same length (as required by this assert)
+                assert(vec_length(u) == vec_length(v));
+  
+                long i;
+                long size = vec_length(u);
+                long limit = size - 5;
+                data_t* du = get_vec_start(u);
+                data_t* dv = get_vec_start(v);
+                data_t sum0 = (data_t) 0;
+                data_t sum1 = (data_t) 0;
+                data_t sum2 = (data_t) 0;
+                data_t sum3 = (data_t) 0;
+                data_t sum4 = (data_t) 0;
+                data_t sum5 = (data_t) 0;
+
+                //main for loop
+                for (i = 0; i < limit; i += 6) {
+                        sum0 = sum0 + du[i] * dv[i];
+                        sum1 = sum1 + du[i+1] * dv[i+1];
+                        sum2 = sum2 + du[i+2] * dv[i+2];
+                        sum3 = sum3 + du[i+3] * dv[i+3];
+                        sum4 = sum4 + du[i+4] * dv[i+4];
+                        sum5 = sum5 + du[i+5] * dv[i+5];
+                }
+
+                //second for loop to process all elements not done in main loop
+                for (; i < size; i++)
+                        sum0 = sum0 + du[i] * dv[i];
+  
+                *dest = sum0 + sum1 + sum2 + sum3 + sum4 + sum5;
+        }
+
+        Question: What factor limits the performance to a CPE of 1.00?
+                The reason that the CPE won't go below one is because there are still
+                some data dependencies present which makes it so only one instruction
+                can begin to be processed on every cycle.
+
+
+
+   5.16) Code implementation: 6x1a
+        void inner6x1a(vec_ptr u, vec_ptr v, data_t* dest) {
+                // You can assume your vectors are the same length (as required by this assert)
+                assert(vec_length(u) == vec_length(v));
+
+                long i;
+                long size = vec_length(u);
+                long limit = size - 5;
+                data_t* du = get_vec_start(u);
+                data_t* dv = get_vec_start(v);
+                data_t sum = (data_t) 0;
+
+                //main for loop
+                for (i = 0; i < limit; i+=6) {
+                        sum = sum + ((du[i] * dv[i]) + 
+                                (du[i+1] * dv[i+1]) + 
+                                (du[i+2] * dv[i+2]) + 
+                                (du[i+3] * dv[i+3]) + 
+                                (du[i+4] * dv[i+4]) + 
+                                (du[i+5] * dv[i+5]));
+                }
+
+                //second for loop to process all elements not done in main loop
+                for (; i < size; i++)
+                        sum = sum + (du[i] * dv[i]);
+  
+                *dest = sum;
+        }
+

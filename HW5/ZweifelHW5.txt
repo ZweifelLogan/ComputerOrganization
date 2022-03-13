@@ -1,0 +1,67 @@
+1) The 128 cluster had a higher average elapsed time and in turn ran slower than the 64 cluster
+   	that came before it.
+   64 is signficant because it represents the block size and the block size determines
+	how wide the range of random values drawn will have to be processed in this program.
+	The larger the block the more spread out the sampling becomes.
+	A general trend in this program is that as block size, which is the same as stride
+	size for this homework, the average elapsed time of that cluster increases AKA
+	efficiency decreases. This is because the block size affects the locality of the 
+	program and the behavior of your computer's memory caches when executing the program.
+
+   
+
+
+
+2) These expirements show the relationship between locality and caches and how these two 
+	things impact the efficiency of a program. As I mentioned in my answer to the 
+	first question the purpose of the block size in our measurements is that effects
+	the locality of our program and the behavior of memory caches during execution.
+	Getting random samples to test in this program rather than do it sequentially is
+	important because it allows us to go away from a program with a stride of 1 and
+	test other stride values and see how they affect the efficiency of our programs.
+	Generally, as the stride value increases for a program the poorer locality it has and
+	in turn the cache hit and miss rates become worse, as does the overall efficiency
+	of the program. However, as the value of n_ops increase the more efficient our program
+	becomes. This is because the more iteratians a loop has the better the locality, because
+	the variables inside the loop body are referenced often which benefits the temporal
+	locality.
+
+	Overall, this expirement shows the following concepts: larger block sizes
+	and stride sizes have a negative affect on the spatial locality of a program.
+	As the number of iterations in a loop increases the temporal locality gets better.
+	A program with a better locality will run more efficiently.
+	Larger block and stride sizes affect caches because the larger the amount of data
+	that needs to get processed the farther down the memory hierarchy your computer
+	must go to components that run slower than their counterparts higher up.
+	A worse locality in a program can cause the Cache hit rate to get worse and
+	the number of cache misses to increase.
+	Because of the relationship between locality and cache performance, a worse locality
+	results in worse cache performance benchmarks, like the miss and hit rate, will 
+	directly result in your program running slower and less efficient.	
+
+
+3) My laptop is a HP ENVY x360
+   The processor is an: AMD Ryzen 5 2500U with Radeon Vega Mobile Gfx 2.00GHz
+   L1 Cache == 384 KB
+   L2 Cache == 2.0 MB
+   L3 Cache == 4.0 MB
+
+   If you were to measure these caches I think it would be essential to modify the
+	expirement in some way so you could see when each cache was being used/accesed
+	as well as when cache hits and misses occured in the caches. This would give valuable insight
+	into the locality and efficiency of your program as well as showing a programmer
+	how his program is interacting with the memory on his computer.
+
+4) The advantage of taking a data-oriented programming approach to this problem is that
+	you would almost certainly increase the locality and in turn the efficiency of your program in comparison 
+	to object-oriented programming. First, calculating the average speed of all particles
+	would have to include continually accessing the array holding all of the speed of
+	the particles which would increase temporal locality because the array is being
+	accessed again and again. Spacial locality would also be increased becasuse when
+	calculating the average you should increment your array by 1 for each iteration
+	which would make it so you were accessing places in the array that were close to
+	each other in memory. For updating the location fields of an array made up of a 
+	struct, all three double values in the struct would most likely be close to one
+	another in memory increasing spacial locality. For both methods locality and in turn
+	efficiency would increase because you would not have to continually access objects
+	and specific fields of said objects in memory.

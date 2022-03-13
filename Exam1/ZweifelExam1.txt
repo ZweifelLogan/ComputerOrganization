@@ -1,0 +1,73 @@
+1) Values stored in 42-bit unsigned type
+	The amount of values that could be stored in a 42-bit unsigned type is 2^42 values
+	In a signed 42-bit type the range of values available is [-2^41, (2^41)-1]
+		with -2^41 being the smallest value and (2^41)-1 being the largest value
+
+2) Base 23 problem
+	12,345,678 in base 10 is equal to 1L2FHE
+	3LM4IK2 in base 23 is equal to 585,486,024 in base 10
+
+3) 8 bit signed int problem
+	10110101 as signed 8-bit integer = -75
+	arithmetic right shift by two = 11101101 = -19
+
+4) 8 bit signed int register problem
+	movsbq %al, %rbx
+	%al is the 1B/8b return register holding 11000101
+	%rbx is a 8B/64b callee saved register
+	movsbq moves a 1 byte sized value to a quad sized value and sign extends the upper bits
+		of the 1B sized value
+	so the original 8 bit 11000101 after the instruction becomes
+		56 1's in a row followed by 11000101
+		ex. 1111111.......111111000101
+	Before the movsbq instruction 11000101 = -59 which was held in the %al regiser
+	After the instruction the value of the 64 bit signed type is still = -59
+	So the %rbx register still holds a decimal value of = -59
+	This is because sign extending bits matching the most significant bit
+		will not affect the value of the bit string being extended
+
+
+5) leaq question
+	1st Instruction = leaq $0x2($0xA0, %rdx), %rdx
+		%rdx = 0xB2
+		%rax = 0x00 
+		%rbx = 0x20 
+
+	2nd Instruction = leaq %rsi(%rdx, %rcx, $0x2), %rbx
+		%rdx = 0xB2 
+		%rax = 0x00 
+		%rbx = 0xC8 
+
+	3rd Instruction = leaq (%rdx, %rbx), %rax
+		%rdx = 0xB2
+		%rax = 0x17A
+		%rbx = 0xC8
+	
+
+
+
+6) assembly to equivalent C program
+
+	int f(int x, int y) {
+		int temp = 1;
+		int temp2 = 0;
+
+		while (x >= temp) {
+			int temp3 = temp3 >> temp;
+			y = y / temp3;
+			if (y != 0) {
+				temp = temp + 1;
+			}	
+				
+			temp2 = temp2 + temp;
+			temp = temp + 1;
+
+		}
+		return temp;
+	
+	}
+
+
+
+
+
